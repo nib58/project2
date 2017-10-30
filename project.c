@@ -123,6 +123,7 @@ int main(int argc, char **argv)
 	}
 
 	trace_init();
+	
 	struct cache_t *I_cache, *D_cache;
 	I_cache = cache_create(I_size, I_bsize, I_assoc, mem_latency); 
 	D_cache = cache_create(D_size, D_bsize, D_assoc, mem_latency);
