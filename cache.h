@@ -1,4 +1,3 @@
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
@@ -60,9 +59,9 @@ int cache_access(struct cache_t *cp, unsigned long address, int access_type)
 
     int penalty = cp->mem_latency;
 	
-	int offset_size = log2(cp->blocksize);
-	int index_size = log2(cp->nsets);
-	int tag_size = 32 - (offset_size + index_size);
+	unsigned int offset_size = log2(cp->blocksize);
+	unsigned int index_size = log2(cp->nsets);
+	unsigned int tag_size = 32 - (offset_size + index_size);
 	
 	unsigned int offset_lshift = tag_size + index_size;
 	unsigned int offset_rshift = 32 - offset_size;
