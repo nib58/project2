@@ -82,15 +82,34 @@ int cache_access(struct cache_t *cp, unsigned long address, int access_type)
 	for(i = 0; i < (cp->assoc); i++)
 	{
 		block = set[i];
+		
 		// Process Block
 		if (tag == block->tag)
 		{
 			// Hit
 			penalty = 0;
+			
+			// Write Back Sets Modified
+			if (access_type == 1)
+			{
+				block->dirty = '1';
+			}
 		}
 		else
 		{
 			// Miss
+			
+			// Write Back If Modified Penalty * 2
+			if (access_type == 1)
+			{
+				if (block->dirty == '1')
+				{
+					penalty = penalty * 2;
+					
+					// Reset dirty bit
+					block->dirty = '0';
+				}
+			}
 		}
 	}
 
