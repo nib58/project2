@@ -60,23 +60,38 @@ int cache_access(struct cache_t *cp, unsigned long address, int access_type)
 
     int penalty = cp->mem_latency;
 	
-	struct cache_blk_t block;
-	int offset = address % (cp->blocksize);
-	int block_address = address / (cp->blocksize);
-	int set_index = block_address % (cp->nsets);
-	
 	int offset_size = log2(cp->blocksize);
 	int index_size = log2(cp->nsets);
-	int shift_value = offset_size + index_size;
+	int tag_size = 32 - (offset_size + index_size);
 	
-	int tag = address >> shift_value;
+	unsigned int offset_lshift = tag_size + index_size;
+	unsigned int offset_rshift = 32 - offset_size;
+	unsigned int index_lshift = tag_size;
+	unsigned int index_rshift = 32 - index_size;
+	unsigned int tag_rshift = offset_size + index_size;
+
+	unsigned int offset = address << offset_lshift;
+	offset = offset >> offset_rshift;
+	unsigned int index = address << index_lshift;
+	index = index >> index_rshift;
+	unsigned int tag = address >> tag_rshift;
 	
 	int i;
-	struct cache_blk_t * set = cp->blocks[set_index];
+	struct cache_blk_t block;
+	struct cache_blk_t * set = cp->blocks[index];
 	for(i = 0; i < (cp->assoc); i++)
 	{
-		block = set[i]
+		block = set[i];
 		// Process Block
+		if (tag == block->tag)
+		{
+			// Hit
+			penalty = 0;
+		}
+		else
+		{
+			// Miss
+		}
 	}
 
     return(penalty);

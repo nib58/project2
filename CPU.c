@@ -96,7 +96,7 @@ int main(int argc, char **argv)
   if (argc == 3) trace_view_on = atoi(argv[2]);
   
   //read in from cache_config.txt
-  unsigned int I_size = 16; 
+  unsigned int I_size = 16;
   unsigned int I_assoc = 4;
   unsigned int I_bsize = 8; 
   unsigned int D_size = 16;
