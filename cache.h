@@ -56,7 +56,7 @@ int cache_access(struct cache_t *cp, unsigned long address, int access_type)
     // If a write back is needed, the function should return 2*mem_latency.
     // access_type (0 for a read and 1 for a write) should be used to set/update the dirty bit.
     // The LRU field of the blocks in the set accessed should also be updated.
-
+	
     int penalty = cp->mem_latency;
 	
 	unsigned int offset_size = log2(cp->blocksize);
@@ -68,7 +68,7 @@ int cache_access(struct cache_t *cp, unsigned long address, int access_type)
 	unsigned int index_lshift = tag_size;
 	unsigned int index_rshift = 32 - index_size;
 	unsigned int tag_rshift = offset_size + index_size;
-
+	
 	unsigned int offset = address << offset_lshift;
 	offset = offset >> offset_rshift;
 	unsigned int index = address << index_lshift;
@@ -76,40 +76,85 @@ int cache_access(struct cache_t *cp, unsigned long address, int access_type)
 	unsigned int tag = address >> tag_rshift;
 	
 	int i;
+	int hit = 0;
 	struct cache_blk_t block;
 	struct cache_blk_t * set = cp->blocks[index];
 	for(i = 0; i < (cp->assoc); i++)
 	{
 		block = set[i];
 		
-		// Process Block
-		if (tag == block->tag)
+		if (access_type == 0)
 		{
-			// Hit
-			penalty = 0;
-			
-			// Write Back Sets Modified
-			if (access_type == 1)
+			// Potential Read Hit
+			if (block->valid == 1)
 			{
-				block->dirty = '1';
+				if (block->tag == tag)
+				{
+					hit = 1;
+					break;
+				}
+			}
+			else
+			{
+				// No More Valid Blocks, Read miss
+				break;
 			}
 		}
 		else
 		{
-			// Miss
-			
-			// Write Back If Modified Penalty * 2
-			if (access_type == 1)
+			// Potential Write Hit
+			if (block->valid == 0)
 			{
-				if (block->dirty == '1')
+				if (block->tag == tag)
 				{
-					penalty = penalty * 2;
-					
-					// Reset dirty bit
-					block->dirty = '0';
+					hit = 1;
+					break;
 				}
+			else
+			{
+				// Something with LRU probably
 			}
 		}
+	}
+	
+	if (hit == 1):
+	{
+		// Hit
+		penalty = 0;
+		
+		// Read Hit Set LRU
+		if (access_type == 0)
+		{
+			// TODO
+			// impliment LRU
+			continue;
+		}
+		else
+		{
+			// Write Back Sets Dirty
+			block->dirty = 1;
+		}
+	}
+	else
+	{
+		// Miss
+		
+		// Write Back, If Dirty: Penalty * 2
+		if (access_type == 1)
+		{
+			if (block->dirty == 1)
+			{
+				penalty = penalty * 2;
+			}
+			
+			block->tag = tag;
+			
+			block->dirty = 0;
+			block->valid = 1;
+		}
+		
+		// TODO
+		// What to do if read miss?
 	}
 
     return(penalty);
