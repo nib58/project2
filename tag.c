@@ -1,13 +1,13 @@
 #include <stdio.h>
-#include <inttypes.h>
-#include <arpa/inet.h>
 #include <math.h>
 
-int main(int argc, char **argv)
+// gcc tag.c -o tag -lm
+
+int main(int argc, const char* argv[])
 {
-	unsigned int blocksize = argv[1];
-	unsigned int nsets = argv[2];
-	unsigned long address = argv[3];
+	unsigned int blocksize = atoi(argv[1]);
+	unsigned int nsets = atoi(argv[2]);
+	unsigned long address = atoi(argv[3]);
 	
 	unsigned int offset_size = log2(blocksize);
 	unsigned int index_size = log2(nsets);
@@ -26,4 +26,6 @@ int main(int argc, char **argv)
 	unsigned int tag = address >> tag_rshift;
 	
 	printf("blocksize: %u\nsets: %u\naddress: %u\ntag: %u\nindex: %u\n offset: %u", blocksize, nsets, address, tag, index, offset);
+	
+	return(0);
 }
