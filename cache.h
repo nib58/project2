@@ -26,7 +26,7 @@ struct cache_t
 struct cache_t * cache_create(int size, int blocksize, int assoc, int mem_latency)
 {
     int i;
-    int nblocks = (size * 1000) / blocksize;    // number of blocks in the cache
+    int nblocks = (size * 1024) / blocksize;    // number of blocks in the cache
     int nsets = nblocks / assoc;                // number of sets (entries) in the cache
     struct cache_t *C = (struct cache_t *)calloc(1, sizeof(struct cache_t));
 
