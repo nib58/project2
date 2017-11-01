@@ -84,6 +84,23 @@ int cache_access(struct cache_t *cp, unsigned long address, int access_type)
 	for(i = 0; i < (cp->assoc); i++)
 	{
 		block = set[i];
+		if (block->valid == 1)
+		{
+			if (block->tag == tag)
+			{	// HIT
+				hit = 1;
+				break;
+			}
+		}
+		else
+		{	// MISS
+			break;
+		}
+	}
+	/*
+	for(i = 0; i < (cp->assoc); i++)
+	{
+		block = set[i];
 		
 		if (access_type == 0)
 		{	// READ
@@ -118,6 +135,7 @@ int cache_access(struct cache_t *cp, unsigned long address, int access_type)
 			}
 		}
 	}
+	*/
 	
 	if (hit == 1):
 	{	// HIT
