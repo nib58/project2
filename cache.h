@@ -92,38 +92,58 @@ int cache_access(struct cache_t *cp, unsigned long address, int access_type)
 	int set_size = cp->assoc;
 	int hit = 0;
 	struct cache_blk_t * block;
-	struct cache_blk_t * LRU_block;
+	//struct cache_blk_t * LRU_block;
 	struct cache_blk_t * set = cp->blocks[index];
 	
-	int LRU[set_size];
-	int LRU_val = 0;
+	//int LRU[set_size];
+	//int LRU_val = 0;
+	
+	printf("------------------------------------------------------------\n");
+	printf("ADDRESS: %u\n", address);
+	printf("TAG: %u\n", tag);
+	printf("INDEX: %u\n", index);
+	printf("OFFSET: %u\n", offset);
+	printf("------------------------------------------------------------\n");
 	
 	for(i = 0; i < set_size; i++)
 	{
 		block = &set[i];
 		
+		printf("BLOCK: %u\n", i);
+		printf("B:Valid %u\n", block->valid);
+		printf("B:Dirty %u\n", block->dirty);
+		printf("B:Tag %u\n", block->tag);
+		
 		if (block->valid == 1)
 		{
 			if (block->tag == tag)
 			{	// HIT
+				printf("HIT!\n");
 				hit = 1;
 				break;
 			}
 		}
 		else
 		{	// MISS
+			printf("MISS!\n");
 			block->LRU = 1;
 		}
 	}
+	
+	printf("------------------------------------------------------------\n");
 	
 	if (hit == 1)
 	{	// HIT
 		// LRU Update
 		penalty = 0;
+		
+		printf("FINAL: HIT\n");
 	}
 	else
 	{	// MISS
 		// LRU Get
+		printf("FINAL: MISS\n");
+		
 		// block = LRU;
 		if (block->dirty == 1)
 		{	// Write Back
@@ -148,6 +168,7 @@ int cache_access(struct cache_t *cp, unsigned long address, int access_type)
 		// Write Always Sets Dirty Bit
 		block->dirty = 1;
 		block->valid = 1;
+		block->tag = tag;
 	}
 
     return(penalty);

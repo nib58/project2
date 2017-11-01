@@ -16,9 +16,9 @@ int main(int argc, const char* argv[])
 	cache = cache_create(size, bsize, assoc, mem_latency);
 	
 	cycle_number = cache_access(cache, address, 1);
-	printf("read: %u\n", cycle_number);
+	printf("WRITE: %u\n", cycle_number);
 	cycle_number = cache_access(cache, address, 0);
-	printf("write: %u\n", cycle_number);
+	printf("READ: %u\n", cycle_number);
 
 	return(0);
 }
