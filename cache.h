@@ -79,11 +79,13 @@ int cache_access(struct cache_t *cp, unsigned long address, int access_type)
 	// Check Blocks
 	int i;
 	int hit = 0;
-	struct cache_blk_t block;
-	struct cache_blk_t * set = cp->blocks[index];
+	struct cache_blk_t * block;
+	struct cache_blk_t ** set = cp->blocks[index];
+	struct cache_blk_t LRU[index_size];
+	
 	for(i = 0; i < (cp->assoc); i++)
 	{
-		block = set[i];
+		block = &set[i];
 		if (block->valid == 1)
 		{
 			if (block->tag == tag)
@@ -97,6 +99,7 @@ int cache_access(struct cache_t *cp, unsigned long address, int access_type)
 			break;
 		}
 	}
+	
 	/*
 	for(i = 0; i < (cp->assoc); i++)
 	{
@@ -147,12 +150,13 @@ int cache_access(struct cache_t *cp, unsigned long address, int access_type)
 		// LRU Get
 		// block = LRU;
 		if (block->dirty == 1)
-		{
+		{	// Write Back
 			penalty = penalty * 2;
 		}
 		else
-		{
+		{	// No Write Back
 			// penalty = penalty;
+			0;
 		}
 		
 		if (access_type == 0)
