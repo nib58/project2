@@ -2,69 +2,19 @@
 #include <inttypes.h>
 #include <arpa/inet.h> 
 #include "CPU.h"
-#include "cache.h" 
+#include "cache_new.h" 
 
-void trace_view(struct trace_item stage, int cycle_number)
-{
-	switch(stage.type)
-	{
-       case ti_NOP:
-		  if (trace_view_on) printf("[cycle %d] NOP:", cycle_number);
-          break;
-        case ti_RTYPE:
-		  if (trace_view_on) {
-			printf("[cycle %d] RTYPE:", cycle_number);
-			printf(" (PC: %x)(sReg_a: %d)(sReg_b: %d)(dReg: %d) \n", stage.type->PC, stage.type->sReg_a, stage.type->sReg_b, stage.type->dReg);
-		  };
-          break;
-        case ti_ITYPE:
-		  if (trace_view_on){
-			printf("[cycle %d] ITYPE:", cycle_number);
-			printf(" (PC: %x)(sReg_a: %d)(dReg: %d)(addr: %x)\n", stage.type->PC, stage.type->sReg_a, stage.type->dReg, stage.type->Addr);
-		  };
-          break;
-        case ti_LOAD:
-		  if (trace_view_on){
-			printf("[cycle %d] LOAD:", cycle_number);
-			printf(" (PC: %x)(sReg_a: %d)(dReg: %d)(addr: %x)\n", stage.type->PC, stage.type->sReg_a, stage.type->dReg, stage.type->Addr);
-		  };
-		  cycle_number = cycle_number + cache_access(D_cache, stage.type->Addr, 0);
-		  // update D_read_access and D_read_misses
-		  break;
-        case ti_STORE:
-		  if (trace_view_on){
-			printf("[cycle %d] STORE:", cycle_number);
-			printf(" (PC: %x)(sReg_a: %d)(sReg_b: %d)(addr: %x)\n", stage.type->PC, stage.type->sReg_a, stage.type->sReg_b, stage.type->Addr);
-		  };
-		  cycle_number = cycle_number + cache_access(D_cache, stage.type->Addr, 1);
-		  // update D_write_access and D_write_misses
-		  break;
-        case ti_BRANCH:
-		  if (trace_view_on) {
-			printf("[cycle %d] BRANCH:", cycle_number);
-			printf(" (PC: %x)(sReg_a: %d)(sReg_b: %d)(addr: %x)\n", stage.type->PC, stage.type->sReg_a, stage.type->sReg_b, stage.type->Addr);
-		  };
-          break;
-        case ti_JTYPE:
-		  if (trace_view_on) {
-			printf("[cycle %d] JTYPE:", cycle_number);
-			printf(" (PC: %x)(addr: %x)\n", stage.type->PC, stage.type->Addr);
-		  };
-          break;
-        case ti_SPECIAL:
-		  if (trace_view_on) printf("[cycle %d] SQUASHED:", cycle_number);
-          break;
-        case ti_JRTYPE:
-		  if (trace_view_on) {
-			printf("[cycle %d] JRTYPE:", cycle_number);
-			printf(" (PC: %x) (sReg_a: %d)(addr: %x)\n", stage.type->PC, stage.type->dReg, stage.type->Addr);
-		  };
-          break;
-    }
-}
 
 int main(int argc, char **argv)
 {
+	
+	unsigned int I_accesses = 0;
+	unsigned int I_misses = 0;
+	unsigned int D_read_accesses = 0;
+	unsigned int D_read_misses = 0;
+	unsigned int D_write_accesses = 0; 
+	unsigned int D_write_misses = 0;
+
 	struct trace_item *tr_entry;
 	struct trace_item IF;
 	struct trace_item ID;
@@ -105,7 +55,7 @@ int main(int argc, char **argv)
   unsigned int mem_latency = 20;
   
   	FILE* file = fopen ("cache_config.txt", "r");
-  	if (f != NULL) {
+  	if (file != NULL) {
 		fscanf(file,"%u %u %u %u %u %u %u",&I_size,&I_assoc, &I_bsize, &D_size, &D_assoc, &D_bsize, &mem_latency);  
 		fclose (file);  
 	}
@@ -195,12 +145,65 @@ int main(int argc, char **argv)
 		IF = *tr_entry;
 		cycle_number++;
 
-		// Print Executed Instructions (trace_view_on=1)
-		if (trace_view_on)
+	// Print Executed Instructions (trace_view_on=1)
+		
+		switch(WB.type)
 		{
-			trace_view(WB, cycle_number);
+		   case ti_NOP:
+			  if (trace_view_on) printf("[cycle %d] NOP:", cycle_number);
+			  break;
+			case ti_RTYPE:
+			  if (trace_view_on) {
+				printf("[cycle %d] RTYPE:", cycle_number);
+				printf(" (PC: %x)(sReg_a: %d)(sReg_b: %d)(dReg: %d) \n", WB.PC, WB.sReg_a, WB.sReg_b, WB.dReg);
+			  };
+			  break;
+			case ti_ITYPE:
+			  if (trace_view_on){
+				printf("[cycle %d] ITYPE:", cycle_number);
+				printf(" (PC: %x)(sReg_a: %d)(dReg: %d)(addr: %x)\n", WB.PC, WB.sReg_a, WB.dReg, WB.Addr);
+			  };
+			  break;
+			case ti_LOAD:
+			  if (trace_view_on){
+				printf("[cycle %d] LOAD:", cycle_number);
+				printf(" (PC: %x)(sReg_a: %d)(dReg: %d)(addr: %x)\n", WB.PC, WB.sReg_a, WB.dReg, WB.Addr);
+			  };
+			  cycle_number = cycle_number + cache_access(D_cache, WB.Addr, 0);
+			  // update D_read_access and D_read_misses
+			  break;
+			case ti_STORE:
+			  if (trace_view_on){
+				printf("[cycle %d] STORE:", cycle_number);
+				printf(" (PC: %x)(sReg_a: %d)(sReg_b: %d)(addr: %x)\n", WB.PC, WB.sReg_a, WB.sReg_b, WB.Addr);
+			  };
+			  cycle_number = cycle_number + cache_access(D_cache, WB.Addr, 1);
+			  // update D_write_access and D_write_misses
+			  break;
+			case ti_BRANCH:
+			  if (trace_view_on) {
+				printf("[cycle %d] BRANCH:", cycle_number);
+				printf(" (PC: %x)(sReg_a: %d)(sReg_b: %d)(addr: %x)\n", WB.PC, WB.sReg_a, WB.sReg_b, WB.Addr);
+			  };
+			  break;
+			case ti_JTYPE:
+			  if (trace_view_on) {
+				printf("[cycle %d] JTYPE:", cycle_number);
+				printf(" (PC: %x)(addr: %x)\n", WB.PC, WB.Addr);
+			  };
+			  break;
+			case ti_SPECIAL:
+			  if (trace_view_on) printf("[cycle %d] SQUASHED:", cycle_number);
+			  break;
+			case ti_JRTYPE:
+			  if (trace_view_on) {
+				printf("[cycle %d] JRTYPE:", cycle_number);
+				printf(" (PC: %x) (sReg_a: %d)(addr: %x)\n", WB.PC, WB.dReg, WB.Addr);
+			  };
+			  break;
 		}
-	}
+	
+}
 
 	trace_uninit();
 	exit(0);
