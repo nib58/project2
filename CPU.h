@@ -1,3 +1,6 @@
+#include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
 
 #ifndef TRACE_ITEM_H
 #define TRACE_ITEM_H

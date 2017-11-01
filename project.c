@@ -2,8 +2,7 @@
 #include <inttypes.h>
 #include <arpa/inet.h> 
 #include "CPU.h"
-#include "cache_new.h" 
-
+#include "cache.h"
 
 int main(int argc, char **argv)
 {

@@ -21,14 +21,18 @@ struct cache_t
     int mem_latency;                // the miss penalty
     struct cache_blk_t **blocks;    // a pointer to the array of cache blocks
 };
-int logarithm(int x){
+
+int logarithm(int x)
+{
 	int count = 0;
-	while(x > 1){
-		x = x/2;
+	while(x > 1)
+	{
+		x = x / 2;
 		count++;
 	}
 	return count;
 }
+
 struct cache_t * cache_create(int size, int blocksize, int assoc, int mem_latency)
 {
     int i;
@@ -50,8 +54,6 @@ struct cache_t * cache_create(int size, int blocksize, int assoc, int mem_latenc
 
     return C;
 }
-
-
 
 int cache_access(struct cache_t *cp, unsigned long address, int access_type)
 {
@@ -98,7 +100,7 @@ int cache_access(struct cache_t *cp, unsigned long address, int access_type)
 	
 	for(i = 0; i < set_size; i++)
 	{
-		block = set[i];
+		block = &set[i];
 		
 		if (block->valid == 1)
 		{
@@ -114,7 +116,7 @@ int cache_access(struct cache_t *cp, unsigned long address, int access_type)
 		}
 	}
 	
-	if (hit == 1):
+	if (hit == 1)
 	{	// HIT
 		// LRU Update
 		penalty = 0;

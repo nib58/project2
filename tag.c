@@ -1,7 +1,5 @@
 #include <stdio.h>
-#include <cache.h>
-
-// gcc tag.c -o tag -lm
+#include "cache.h"
 
 int main(int argc, const char* argv[])
 {
@@ -12,12 +10,15 @@ int main(int argc, const char* argv[])
 	
 	unsigned int address = 12345678;
 	// 00000000 10111100 01100001 01001110
+	unsigned int cycle_number = 0;
 	
 	struct cache_t *cache;
 	cache = cache_create(size, bsize, assoc, mem_latency);
 	
 	cycle_number = cache_access(cache, address, 1);
-	printf("read: %u", cycle_number);
+	printf("read: %u\n", cycle_number);
 	cycle_number = cache_access(cache, address, 0);
-	printf("write: %u", cycle_number);
+	printf("write: %u\n", cycle_number);
+
+	return(0);
 }
