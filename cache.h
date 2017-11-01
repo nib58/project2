@@ -21,7 +21,14 @@ struct cache_t
     int mem_latency;                // the miss penalty
     struct cache_blk_t **blocks;    // a pointer to the array of cache blocks
 };
-
+int logarithm(int x){
+	int count = 0;
+	while(x > 1){
+		x = x/2;
+		count++;
+	}
+	return count;
+}
 struct cache_t * cache_create(int size, int blocksize, int assoc, int mem_latency)
 {
     int i;
@@ -44,6 +51,8 @@ struct cache_t * cache_create(int size, int blocksize, int assoc, int mem_latenc
     return C;
 }
 
+
+
 int cache_access(struct cache_t *cp, unsigned long address, int access_type)
 {
     //
@@ -60,8 +69,8 @@ int cache_access(struct cache_t *cp, unsigned long address, int access_type)
     int penalty = cp->mem_latency;
 	
 	// Setting Sizes and Computing Values
-	unsigned int offset_size = log2(cp->blocksize);
-	unsigned int index_size = log2(cp->nsets);
+	unsigned int offset_size = logarithm(cp->blocksize);
+	unsigned int index_size = logarithm(cp->nsets);
 	unsigned int tag_size = 32 - (offset_size + index_size);
 	
 	unsigned int offset_lshift = tag_size + index_size;
