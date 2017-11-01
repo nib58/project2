@@ -78,14 +78,25 @@ int cache_access(struct cache_t *cp, unsigned long address, int access_type)
 	
 	// Check Blocks
 	int i;
+	int set_size = cp->assoc;
 	int hit = 0;
 	struct cache_blk_t * block;
-	struct cache_blk_t ** set = cp->blocks[index];
-	struct cache_blk_t LRU[index_size];
+	struct cache_blk_t * LRU_block;
+	struct cache_blk_t * set = cp->blocks[index];
 	
-	for(i = 0; i < (cp->assoc); i++)
+	int LRU[set_size];
+	int LRU_val = 0;
+	
+	for(i = 0; i < set_size; i++)
 	{
 		block = &set[i];
+		
+		LRU_val = block->LRU;
+		if (LRU_val != 0)
+		{
+			LRU[LRU_val] = i;
+		}
+		
 		if (block->valid == 1)
 		{
 			if (block->tag == tag)
@@ -96,7 +107,7 @@ int cache_access(struct cache_t *cp, unsigned long address, int access_type)
 		}
 		else
 		{	// MISS
-			break;
+			0;
 		}
 	}
 	
