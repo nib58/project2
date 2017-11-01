@@ -59,6 +59,7 @@ int cache_access(struct cache_t *cp, unsigned long address, int access_type)
 	
     int penalty = cp->mem_latency;
 	
+	// Setting Sizes and Computing Values
 	unsigned int offset_size = log2(cp->blocksize);
 	unsigned int index_size = log2(cp->nsets);
 	unsigned int tag_size = 32 - (offset_size + index_size);
@@ -75,6 +76,7 @@ int cache_access(struct cache_t *cp, unsigned long address, int access_type)
 	index = index >> index_rshift;
 	unsigned int tag = address >> tag_rshift;
 	
+	// Check Blocks
 	int i;
 	int hit = 0;
 	struct cache_blk_t block;
@@ -84,78 +86,141 @@ int cache_access(struct cache_t *cp, unsigned long address, int access_type)
 		block = set[i];
 		
 		if (access_type == 0)
-		{
+		{	// READ
 			// Potential Read Hit
 			if (block->valid == 1)
 			{
 				if (block->tag == tag)
-				{
+				{	// HIT
 					hit = 1;
 					break;
 				}
 			}
 			else
-			{
-				// No More Valid Blocks, Read miss
+			{	// MISS
 				break;
 			}
 		}
 		else
-		{
+		{	// WRITE
 			// Potential Write Hit
-			if (block->valid == 0)
+			if (block->valid == 1)
 			{
 				if (block->tag == tag)
-				{
+				{	// HIT
 					hit = 1;
 					break;
 				}
+			}
 			else
-			{
-				// Something with LRU probably
+			{	// MISS
+				break;
 			}
 		}
 	}
 	
 	if (hit == 1):
-	{
-		// Hit
+	{	// HIT
+		// LRU Update
 		penalty = 0;
-		
-		// Read Hit Set LRU
-		if (access_type == 0)
+	}
+	else
+	{	// MISS
+		// LRU Get
+		// block = LRU;
+		if (block->dirty == 1)
 		{
-			// TODO
-			// impliment LRU
-			continue;
+			penalty = penalty * 2;
 		}
 		else
 		{
-			// Write Back Sets Dirty
+			// penalty = penalty;
+		}
+		
+		if (access_type == 0)
+		{	// READ
+			// Read Resets Dirty Bit On Miss
+			block->dirty = 0;
+			block->valid = 1;
+		}
+	}
+
+	if (access_type == 0)
+	{	// WRITE
+		// Write Always Sets Dirty Bit
+		block->dirty = 1;
+		block->valid = 1;
+	}
+	
+	/*
+	if (hit == 1):
+	{	// HIT		
+		if (access_type == 0)
+		{	// READ
+			penalty = 0;
+			// LRU Add
+			continue;
+		}
+		else
+		{	// WRITE
+			
+			
+			
+			// Write Always Sets Block To Dirty
 			block->dirty = 1;
 		}
 	}
 	else
-	{
-		// Miss
+	{	// MISS
 		
-		// Write Back, If Dirty: Penalty * 2
-		if (access_type == 1)
-		{
-			if (block->dirty == 1)
-			{
-				penalty = penalty * 2;
+
+		if (access_type == 0)
+		{	// READ
+			if (i == ((cp->assoc) - 1))
+			{	// LRU Get
+				// block = LRU;
+				if (block->dirty == 1)
+				{
+					penalty = penalty * 2;
+				}
+				else
+				{
+					block->tag = tag;
+					block->valid = 1;
+				}
+			}
+			else
+			{	// Write To First Invalid Block
+				block->tag = tag;
+				block->valid = 1;
+			}
+		}
+		else
+		{	// WRITE
+			if (i == ((cp->assoc) - 1))
+			{	// LRU Get
+				// block = LRU;
+				if (block->dirty == 1)
+				{
+					penalty = penalty * 2;
+				}
+				else
+				{
+					
+				}
+				
+			}
+			else
+			{	// Write To First Invalid Block
+				block->tag = tag;
+				block->valid = 1;
 			}
 			
-			block->tag = tag;
-			
-			block->dirty = 0;
-			block->valid = 1;
+			// Write Always Sets Block To Dirty
+			block->dirty = 1;
 		}
-		
-		// TODO
-		// What to do if read miss?
 	}
+	*/
 
     return(penalty);
 }
