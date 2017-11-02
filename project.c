@@ -1,4 +1,4 @@
-#include <stdio.h>
+#include <stdio.h>u88
 #include <inttypes.h>
 #include <arpa/inet.h> 
 #include "CPU.h"
@@ -110,13 +110,12 @@ int main(int argc, char **argv)
 			{
 				size = trace_get_item(&tr_entry);
 				penalty = cache_access(I_cache, tr_entry->Addr, 0);
-				cycle_number = cycle_number + penalty;
-				if(penalty == 0){
-					I_accesses++;
-				}
-				else{
-					I_misses++;
-				}				
+				cycle_number = cycle_number + penalty;		
+				I_accesses++;
+					if(penalty != 0){
+						I_misses++;
+					}	
+				}	
 				if(!size){
 					printf("+ Simulation terminates at cycle : %u\n", cycle_number);
 					printf("I-cache accesses %u and misses %u\n", I_accesses, I_misses);
@@ -124,18 +123,17 @@ int main(int argc, char **argv)
 					printf("D-cache Write accesses %u and misses %u\n", D_write_accesses, D_write_misses);
 					break;
 				}
-			}	
 		}
 		else
 		{
-			size = trace_get_item(&tr_entry);
-			penalty = cache_access(I_cache, tr_entry->Addr, 0);
-			cycle_number = cycle_number + penalty;
-			if(penalty == 0){
-			  	I_accesses++;
-			}
-			else{
-			  	I_misses++;
+			if(counter == 0){		
+				size = trace_get_item(&tr_entry);
+				penalty = cache_access(I_cache, tr_entry->Addr, 0);
+				cycle_number = cycle_number + penalty;
+				I_accesses++;
+					if(penalty != 0){
+						I_misses++;
+					}	
 			}
 			if(!size){
 				printf("+ Simulation terminates at cycle : %u\n", cycle_number);
@@ -161,7 +159,7 @@ int main(int argc, char **argv)
 		else{
 			IF = *tr_entry;
 		}
-		cycle_number++;
+		cycle_number++;//good
 
 	// Print Executed Instructions (trace_view_on=1)
 		
@@ -189,10 +187,8 @@ int main(int argc, char **argv)
 			  }
 			  penalty = cache_access(D_cache, WB.Addr, 0);
 			  cycle_number = cycle_number + penalty;
-			  if(penalty == 0){
-			  	D_read_accesses++;
-			  }
-			  else{
+			  D_read_accesses++;
+			  if(penalty != 0){
 			  	D_read_misses++;
 			  }
 			  	
@@ -203,12 +199,11 @@ int main(int argc, char **argv)
 				printf("[cycle %d] STORE:", cycle_number);
 				printf(" (PC: %x)(sReg_a: %d)(sReg_b: %d)(addr: %x)\n", WB.PC, WB.sReg_a, WB.sReg_b, WB.Addr);
 			  }
+			  D_write_accesses++;
 			  penalty = cache_access(D_cache, WB.Addr, 1);
 			  cycle_number = cycle_number + penalty;
-			  if(penalty == 0){
-			  	D_write_accesses++;
-			  }
-			  else{
+			  
+			  if(penalty != 0){
 			  	D_write_misses++;
 			  }
 			  // update D_write_access and D_write_misses
@@ -226,7 +221,7 @@ int main(int argc, char **argv)
 			  }
 			  break;
 			case ti_SPECIAL:
-			  if (trace_view_on) printf("[cycle %d] SQUASHED:", cycle_number);
+			  if (trace_view_on) printf("[cycle %d] SQUASHED!\n", cycle_number);
 			  break;
 			case ti_JRTYPE:
 			  if (trace_view_on) {
