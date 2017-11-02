@@ -89,7 +89,6 @@ int main(int argc, char **argv)
 		if((EX.type == 3) && (EX.dReg == ID.sReg_a || EX.dReg == ID.sReg_b))
 		{
 			//stall
-			
 			EX.type = 0;
 			//bubble IF and ID 
 			*tr_entry = IF;
@@ -127,7 +126,6 @@ int main(int argc, char **argv)
 				printf("D-cache Read accesses %u and misses %u\n", D_read_accesses, D_read_misses);
 				printf("D-cache Write accesses %u and misses %u\n", D_write_accesses, D_write_misses);
 				break;
-				break;
 			}
 		}
 		// Cascade States
@@ -159,19 +157,19 @@ int main(int argc, char **argv)
 			  if (trace_view_on) {
 				printf("[cycle %d] RTYPE:", cycle_number);
 				printf(" (PC: %x)(sReg_a: %d)(sReg_b: %d)(dReg: %d) \n", WB.PC, WB.sReg_a, WB.sReg_b, WB.dReg);
-			  };
+			  }
 			  break;
 			case ti_ITYPE:
 			  if (trace_view_on){
 				printf("[cycle %d] ITYPE:", cycle_number);
 				printf(" (PC: %x)(sReg_a: %d)(dReg: %d)(addr: %x)\n", WB.PC, WB.sReg_a, WB.dReg, WB.Addr);
-			  };
+			  }
 			  break;
 			case ti_LOAD:
 			  if (trace_view_on){
 				printf("[cycle %d] LOAD:", cycle_number);
 				printf(" (PC: %x)(sReg_a: %d)(dReg: %d)(addr: %x)\n", WB.PC, WB.sReg_a, WB.dReg, WB.Addr);
-			  };
+			  }
 			  cycle_number = cycle_number + cache_access(D_cache, WB.Addr, 0);
 			  // update D_read_access and D_read_misses
 			  break;
@@ -179,7 +177,7 @@ int main(int argc, char **argv)
 			  if (trace_view_on){
 				printf("[cycle %d] STORE:", cycle_number);
 				printf(" (PC: %x)(sReg_a: %d)(sReg_b: %d)(addr: %x)\n", WB.PC, WB.sReg_a, WB.sReg_b, WB.Addr);
-			  };
+			  }
 			  cycle_number = cycle_number + cache_access(D_cache, WB.Addr, 1);
 			  // update D_write_access and D_write_misses
 			  break;
@@ -187,13 +185,13 @@ int main(int argc, char **argv)
 			  if (trace_view_on) {
 				printf("[cycle %d] BRANCH:", cycle_number);
 				printf(" (PC: %x)(sReg_a: %d)(sReg_b: %d)(addr: %x)\n", WB.PC, WB.sReg_a, WB.sReg_b, WB.Addr);
-			  };
+			  }
 			  break;
 			case ti_JTYPE:
 			  if (trace_view_on) {
 				printf("[cycle %d] JTYPE:", cycle_number);
 				printf(" (PC: %x)(addr: %x)\n", WB.PC, WB.Addr);
-			  };
+			  }
 			  break;
 			case ti_SPECIAL:
 			  if (trace_view_on) printf("[cycle %d] SQUASHED:", cycle_number);
@@ -202,7 +200,7 @@ int main(int argc, char **argv)
 			  if (trace_view_on) {
 				printf("[cycle %d] JRTYPE:", cycle_number);
 				printf(" (PC: %x) (sReg_a: %d)(addr: %x)\n", WB.PC, WB.dReg, WB.Addr);
-			  };
+			  }
 			  break;
 		}
 	
