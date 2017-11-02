@@ -100,27 +100,56 @@ int cache_access(struct cache_t *cp, unsigned long address, int access_type)
 	struct cache_blk_t * LRU_block;
 	struct cache_blk_t * set = cp->blocks[index];
 	
+	//int LRU[set_size];
+	//int LRU_val = 0;
+	
+	printf("------------------------------------------------------------\n");
+	printf("ADDRESS: %lu\n", address);
+	printf("TAG: %u:%u\n", tag, tag_size);
+	printf("INDEX: %u:%u\n", index, index_size);
+	printf("OFFSET: %u:%u\n", offset, offset_size);
+	printf("------------------------------------------------------------\n");
+	printf("INITIAL SET:\n");
+	
 	for(i = 0; i < set_size; i++)
 	{
 		block = &set[i];
+		
+		printf("--------------------\n");
+		printf("BLOCK: %u\n", i);
+		printf("B:Valid %u\n", block->valid);
+		printf("B:Dirty %u\n", block->dirty);
+		printf("B:Tag %lu\n", block->tag);
+		printf("B:LRU %u\n", block->LRU);
 		
 		if (block->valid == 1)
 		{
 			if (block->tag == tag)
 			{	// HIT
+				printf("HIT!\n");
 				block_index = i;
 				hit = 1;
+			}
+			else
+			{
+				printf("MISS!\n");
 			}
 		}
 		else
 		{	// MISS
+			printf("INITIAL MISS!\n");
 			block->LRU = 1;
 		}
 	}
 	
+	printf("------------------------------------------------------------\n");
+	
+	printf("INITIAL TARGET: %u\n", block_index);
+	
 	if (hit == 1)
 	{	// HIT		
 		penalty = 0;
+		printf("FINAL: HIT\n");
 	}
 	else
 	{	// MISS
@@ -143,12 +172,18 @@ int cache_access(struct cache_t *cp, unsigned long address, int access_type)
 		{	// Write Back
 			penalty = penalty * 2;
 		}
+		else
+		{	// No Write Back
+			// penalty = penalty;
+		}
 		
 		if (access_type == 0)
 		{	// READ
 			// Read Resets Dirty Bit On Miss
 			block->dirty = 0;
 		}
+		
+		printf("FINAL: MISS\n");
 	}
 
 	if (access_type == 1)
@@ -156,21 +191,34 @@ int cache_access(struct cache_t *cp, unsigned long address, int access_type)
 		// Write Always Sets Dirty Bit	
 		block->dirty = 1;
 	}
+	
+	printf("FINAL TARGET: %u\n", block_index);
+	printf("------------------------------------------------------------\n");
+	printf("FINAL SET:\n");
+	
+	// For Whatever Block Was Accessed, This Is True
 
 	// LRU Update
 	for(i = 0; i < set_size; i++)
 	{
 		LRU_block = &set[i];
-		if (LRU_block->LRU < block->LRU)
-		{   //change this to only inc values LESS than block->LRU		
+		if (LRU_block->LRU < block->LRU){ //change this to only inc values LESS than block->LRU		
 			LRU_block->LRU++;
 		}		
+		printf("--------------------\n");
+		printf("BLOCK: %u\n", i);
+		printf("B:Valid %u\n", LRU_block->valid);
+		printf("B:Dirty %u\n", LRU_block->dirty);
+		printf("B:Tag %lu\n", LRU_block->tag);
+		printf("B:LRU %u\n", LRU_block->LRU);
 	}
 	
-	// For Whatever Block Was Accessed, This Is True
 	block->tag = tag;
 	block->valid = 1;
 	block->LRU = 1;
+	
+	
+	printf("------------------------------------------------------------\n");
 
     return(penalty);
 }
