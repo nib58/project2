@@ -89,10 +89,15 @@ int cache_access(struct cache_t *cp, unsigned long address, int access_type)
 	
 	// Check Blocks
 	int i;
-	int set_size = cp->assoc;
+	
 	int hit = 0;
+	int set_size = cp->assoc;
+	int block_index = -1;
+	int LRU_value = 0;
+	int LRU_comp = 0;
+	
 	struct cache_blk_t * block;
-	//struct cache_blk_t * LRU_block;
+	struct cache_blk_t * LRU_block;
 	struct cache_blk_t * set = cp->blocks[index];
 	
 	//int LRU[set_size];
@@ -100,51 +105,69 @@ int cache_access(struct cache_t *cp, unsigned long address, int access_type)
 	
 	printf("------------------------------------------------------------\n");
 	printf("ADDRESS: %u\n", address);
-	printf("TAG: %u\n", tag);
-	printf("INDEX: %u\n", index);
-	printf("OFFSET: %u\n", offset);
+	printf("TAG: %u:%u\n", tag, tag_size);
+	printf("INDEX: %u:%u\n", index, index_size);
+	printf("OFFSET: %u:%u\n", offset, offset_size);
 	printf("------------------------------------------------------------\n");
+	printf("INITIAL SET:\n");
 	
 	for(i = 0; i < set_size; i++)
 	{
 		block = &set[i];
 		
+		printf("--------------------\n");
 		printf("BLOCK: %u\n", i);
 		printf("B:Valid %u\n", block->valid);
 		printf("B:Dirty %u\n", block->dirty);
 		printf("B:Tag %u\n", block->tag);
+		printf("B:LRU %u\n", block->LRU);
 		
 		if (block->valid == 1)
 		{
 			if (block->tag == tag)
 			{	// HIT
 				printf("HIT!\n");
+				block_index = i;
 				hit = 1;
-				break;
+			}
+			else
+			{
+				printf("MISS!\n");
 			}
 		}
 		else
 		{	// MISS
-			printf("MISS!\n");
+			printf("INITIAL MISS!\n");
 			block->LRU = 1;
 		}
 	}
 	
 	printf("------------------------------------------------------------\n");
 	
+	printf("INITIAL TARGET: %u\n", block_index);
+	
 	if (hit == 1)
-	{	// HIT
-		// LRU Update
+	{	// HIT		
 		penalty = 0;
-		
 		printf("FINAL: HIT\n");
 	}
 	else
 	{	// MISS
 		// LRU Get
-		printf("FINAL: MISS\n");
 		
 		// block = LRU;
+		for(i = 0; i < set_size; i++)
+		{
+			LRU_block = &set[i];
+			LRU_value = LRU_block->LRU;
+			if (LRU_value > LRU_comp)
+			{
+				LRU_comp = LRU_value;
+				block = LRU_block;
+				block_index = i;
+			}
+		}
+		
 		if (block->dirty == 1)
 		{	// Write Back
 			penalty = penalty * 2;
@@ -159,17 +182,44 @@ int cache_access(struct cache_t *cp, unsigned long address, int access_type)
 		{	// READ
 			// Read Resets Dirty Bit On Miss
 			block->dirty = 0;
-			block->valid = 1;
 		}
+		
+		printf("FINAL: MISS\n");
 	}
 
 	if (access_type == 1)
 	{	// WRITE
-		// Write Always Sets Dirty Bit
+		// Write Always Sets Dirty Bit	
 		block->dirty = 1;
-		block->valid = 1;
-		block->tag = tag;
 	}
+	
+	printf("FINAL TARGET: %u\n", block_index);
+	printf("------------------------------------------------------------\n");
+	printf("FINAL SET:\n");
+	
+	// For Whatever Block Was Accessed, This Is True
+	block->tag = tag;
+	block->valid = 1;
+	block->LRU = 1;
+	
+	// LRU Update
+	for(i = 0; i < set_size; i++)
+	{
+		LRU_block = &set[i];
+		if (i != block_index)
+		{
+			LRU_block->LRU++;
+		}
+		
+		printf("--------------------\n");
+		printf("BLOCK: %u\n", i);
+		printf("B:Valid %u\n", LRU_block->valid);
+		printf("B:Dirty %u\n", LRU_block->dirty);
+		printf("B:Tag %u\n", LRU_block->tag);
+		printf("B:LRU %u\n", LRU_block->LRU);
+	}
+	
+	printf("------------------------------------------------------------\n");
 
     return(penalty);
 }
