@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "cache.h"
+#include "cache_debug.h"
 
 int main(int argc, const char* argv[])
 {
@@ -7,7 +7,6 @@ int main(int argc, const char* argv[])
 	unsigned int assoc = 4;
 	unsigned int bsize = 8;
 	unsigned int mem_latency = 20;
-	
 	
 	unsigned int address1 = 12345678;
 	// 00000000101111000110000101001110
@@ -49,11 +48,7 @@ int main(int argc, const char* argv[])
 	printf("WRITE: %u\n", cycle_number);
 	cycle_number = cache_access(cache, address3, 1);
 	printf("WRITE: %u\n", cycle_number);
-	cycle_number = cache_access(cache, address1, 1);
-	printf("WRITE: %u\n", cycle_number);
 	cycle_number = cache_access(cache, address2, 1);
-	printf("WRITE: %u\n", cycle_number);
-	cycle_number = cache_access(cache, address1, 1);
 	printf("WRITE: %u\n", cycle_number);
 	// Replace
 	cycle_number = cache_access(cache, address5, 1);

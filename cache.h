@@ -24,13 +24,13 @@ struct cache_t
 
 int logarithm(int x)
 {
-	int count = 0;
-	while(x > 1)
-	{
-		x = x / 2;
-		count++;
-	}
-	return count;
+    int count = 0;
+    while(x > 1)
+    {
+        x = x / 2;
+        count++;
+    }
+    return count;
 }
 
 struct cache_t * cache_create(int size, int blocksize, int assoc, int mem_latency)
@@ -49,7 +49,7 @@ struct cache_t * cache_create(int size, int blocksize, int assoc, int mem_latenc
 
     for(i = 0; i < nsets; i++)
     {
-		C->blocks[i] = (struct cache_blk_t *)calloc(assoc, sizeof(struct cache_blk_t));
+        C->blocks[i] = (struct cache_blk_t *)calloc(assoc, sizeof(struct cache_blk_t));
     }
 
     return C;
@@ -67,110 +67,115 @@ int cache_access(struct cache_t *cp, unsigned long address, int access_type)
     // If a write back is needed, the function should return 2*mem_latency.
     // access_type (0 for a read and 1 for a write) should be used to set/update the dirty bit.
     // The LRU field of the blocks in the set accessed should also be updated.
-	
+
     int penalty = cp->mem_latency;
-	
-	// Setting Sizes and Computing Values
-	unsigned int offset_size = logarithm(cp->blocksize);
-	unsigned int index_size = logarithm(cp->nsets);
-	unsigned int tag_size = 32 - (offset_size + index_size);
-	
-	unsigned int offset_lshift = tag_size + index_size;
-	unsigned int offset_rshift = 32 - offset_size;
-	unsigned int index_lshift = tag_size;
-	unsigned int index_rshift = 32 - index_size;
-	unsigned int tag_rshift = offset_size + index_size;
-	
-	unsigned int offset = address << offset_lshift;
-	offset = offset >> offset_rshift;
-	unsigned int index = address << index_lshift;
-	index = index >> index_rshift;
-	unsigned int tag = address >> tag_rshift;
-	
-	// Check Blocks
-	int i;
-	
-	int hit = 0;
-	int set_size = cp->assoc;
-	int block_index = -1;
-	int LRU_value = 0;
-	int LRU_comp = 0;
-	
-	struct cache_blk_t * block;
-	struct cache_blk_t * LRU_block;
-	struct cache_blk_t * set = cp->blocks[index];
-	
-	for(i = 0; i < set_size; i++)
-	{
-		block = &set[i];
-		
-		if (block->valid == 1)
-		{
-			if (block->tag == tag)
-			{	// HIT
-				block_index = i;
-				hit = 1;
-			}
-		}
-		else
-		{	// MISS
-			block->LRU = 1;
-		}
-	}
-	
-	if (hit == 1)
-	{	// HIT		
-		penalty = 0;
-	}
-	else
-	{	// MISS
-		// LRU Get
-		
-		// block = LRU;
-		for(i = 0; i < set_size; i++)
-		{
-			LRU_block = &set[i];
-			LRU_value = LRU_block->LRU;
-			if (LRU_value > LRU_comp)
-			{
-				LRU_comp = LRU_value;
-				block = LRU_block;
-				block_index = i;
-			}
-		}
-		
-		if (block->dirty == 1)
-		{	// Write Back
-			penalty = penalty * 2;
-		}
-		
-		if (access_type == 0)
-		{	// READ
-			// Read Resets Dirty Bit On Miss
-			block->dirty = 0;
-		}
-	}
 
-	if (access_type == 1)
-	{	// WRITE
-		// Write Always Sets Dirty Bit	
-		block->dirty = 1;
-	}
+    // Setting Sizes and Computing Values
+    unsigned int offset_size = logarithm(cp->blocksize);
+    unsigned int index_size = logarithm(cp->nsets);
+    unsigned int tag_size = 32 - (offset_size + index_size);
 
-	// LRU Update
-	for(i = 0; i < set_size; i++)
-	{
-		LRU_block = &set[i];
-		if (LRU_block->LRU < block->LRU)
-		{   //change this to only inc values LESS than block->LRU		
-			LRU_block->LRU++;
-		}		
-	}
+    unsigned int offset_lshift = tag_size + index_size;
+    unsigned int offset_rshift = 32 - offset_size;
+    unsigned int index_lshift = tag_size;
+    unsigned int index_rshift = 32 - index_size;
+    unsigned int tag_rshift = offset_size + index_size;
+
+    unsigned int offset = address << offset_lshift;
+    offset = offset >> offset_rshift;
+    unsigned int index = address << index_lshift;
+    index = index >> index_rshift;
+    unsigned int tag = address >> tag_rshift;
+
+    // Check Blocks
+    int i;
+
+    int hit = 0;
+    int set_size = cp->assoc;
+    int block_index = set_size;
+    int LRU_value = 0;
+    int LRU_comp = -1;
+
+    struct cache_blk_t * block;
+    struct cache_blk_t * set_block;
+    struct cache_blk_t * LRU_block;
+    struct cache_blk_t * set = cp->blocks[index];
+
+    for(i = 0; i < set_size; i++)
+    {
+        set_block = &set[i];
+        if (set_block->valid == 1)
+        {
+            if (set_block->tag == tag)
+            {   // HIT
+                block_index = i;
+                hit = 1;
+            }
+        }
+        else
+        {   // MISS
+            set_block->LRU = set_size;
+        }
+    }
 	
-	// For Whatever Block Was Accessed, This Is True
+    // Reset Block To Hit If Possible
+    if (i == set_size)
+    {
+        block = &set[block_index];
+    }
+
+    if (hit == 1)
+    {   // HIT
+        penalty = 0;
+    }
+    else
+    {   // MISS
+        // LRU Get
+        // Block Should Be LRU Block;
+        for(i = 0; i < set_size; i++)
+        {
+            LRU_block = &set[i];
+            LRU_value = LRU_block->LRU;
+            if (LRU_value > LRU_comp)
+            {
+                LRU_comp = LRU_value;
+                block = LRU_block;
+                block_index = i;
+            }
+        }
+
+        if (block->dirty == 1)
+        {   // Write Back
+            penalty = penalty * 2;
+        }
+
+        if (access_type == 0)
+        {   // READ
+            // Read Resets Dirty Bit On Miss
+            block->dirty = 0;
+        }
+    }
+
+    if (access_type == 1)
+    {   // WRITE
+        // Write Always Sets Dirty Bit
+        block->dirty = 1;
+    }
+
+    // LRU Update
+	LRU_comp = block->LRU;
+    for(i = 0; i < set_size; i++)
+    {	
+		set_block = &set[i];
+        if ((i != block_index) && (set_block->LRU <= LRU_comp))
+        {   // Only Increment Values Lower Than Block's LRU
+            set_block->LRU++;
+        }
+    }
+	
+	// Update Block Values
 	block->tag = tag;
-	block->valid = 1;
-	block->LRU = 1;
-
+    block->valid = 1;
+	block->LRU = 0;
     return(penalty);
 }
