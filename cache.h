@@ -144,7 +144,7 @@ int cache_access(struct cache_t *cp, unsigned long address, int access_type)
 	
 	printf("------------------------------------------------------------\n");
 	
-	printf("INITIAL TARGET: %u\n", block_index);
+	printf("INITIAL TARGET: %u\n", i);
 	
 	if (hit == 1)
 	{	// HIT		
@@ -212,11 +212,19 @@ int cache_access(struct cache_t *cp, unsigned long address, int access_type)
 		}
 		
 		printf("--------------------\n");
+		if (i == block_index)
+		{
+			printf("*-*-*-*-*-*-*-*-*-*\n");
+		}
 		printf("BLOCK: %u\n", i);
 		printf("B:Valid %u\n", LRU_block->valid);
 		printf("B:Dirty %u\n", LRU_block->dirty);
 		printf("B:Tag %u\n", LRU_block->tag);
 		printf("B:LRU %u\n", LRU_block->LRU);
+		if (i == block_index)
+		{
+			printf("*-*-*-*-*-*-*-*-*-*\n");
+		}
 	}
 	
 	printf("------------------------------------------------------------\n");
