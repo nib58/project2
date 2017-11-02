@@ -15,7 +15,8 @@ int main(int argc, char **argv)
 	unsigned int D_write_misses = 0;
 	int counter = 0;
 	int penalty = 0;
-
+	int dontUpdate = 0;
+	int test = 0;
 	struct trace_item *tr_entry;
 	struct trace_item IF;
 	struct trace_item ID;
@@ -92,8 +93,12 @@ int main(int argc, char **argv)
 			//stall
 			EX.type = 0;
 			//bubble IF and ID 
-			*tr_entry = IF;
-			IF = ID;			
+			dontUpdate = 1;	
+			printf("Load Use Error\n");	
+			test++;
+			if(test == 100){
+				exit(0);
+			}	
 			
 		}
 		
@@ -135,6 +140,7 @@ int main(int argc, char **argv)
 						I_misses++;
 					}	
 			}
+			test = 0;
 			if(!size){
 				printf("+ Simulation terminates at cycle : %u\n", cycle_number);
 				printf("I-cache accesses %u and misses %u\n", I_accesses, I_misses);
@@ -148,7 +154,9 @@ int main(int argc, char **argv)
 		WB = MEM;
 		MEM = EX;
 		EX = ID; 
-		ID = IF;
+		if(dontUpdate == 0){
+			ID = IF;
+		}
 		if(counter > 0){//if counter = 1
 			IF = SQUASHED;
 			counter++;
@@ -157,7 +165,12 @@ int main(int argc, char **argv)
 			}
 		}
 		else{
-			IF = *tr_entry;
+			if(dontUpdate == 0){
+				IF = *tr_entry;
+			}
+			else{
+				dontUpdate = 0;
+			}
 		}
 		cycle_number++;//good
 
