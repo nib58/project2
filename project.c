@@ -100,7 +100,7 @@ int main(int argc, char **argv)
 		else if(IF.type == 5)
 		{
 			// Branch Was Taken
-			if(IF.PC - tr_entry.PC != 4)//det branch 
+			if(IF.PC - tr_entry->PC != 4)//det branch 
 			{
 				//branch, set IF = SQUASHED for two cycles, continue to propogate
 				counter = 1;				
