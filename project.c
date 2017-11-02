@@ -13,6 +13,7 @@ int main(int argc, char **argv)
 	unsigned int D_read_misses = 0;
 	unsigned int D_write_accesses = 0; 
 	unsigned int D_write_misses = 0;
+	int counter = 0;
 
 	struct trace_item *tr_entry;
 	struct trace_item IF;
@@ -20,6 +21,8 @@ int main(int argc, char **argv)
 	struct trace_item EX;
 	struct trace_item MEM;
 	struct trace_item WB;
+	struct trace_item SQUASHED;
+	SQUASHED.type = 7;
 	
 	size_t size;
 	char *trace_file_name;
@@ -95,21 +98,13 @@ int main(int argc, char **argv)
 		}
 		
 		// Branch Prediction
-		else if(EX.type == 5)
+		else if(IF.type == 5)
 		{
 			// Branch Was Taken
-			if(ID.PC - EX.PC != 4)
+			if(IF.PC - tr_entry.PC != 4)//det branch 
 			{
-					IF.type = 7;
-					ID.type = 7;
-					size = trace_get_item(&tr_entry);
-					if(!size){
-						printf("+ Simulation terminates at cycle : %u\n", cycle_number);
-     					printf("I-cache accesses %u and misses %u\n", I_accesses, I_misses);
-					  	printf("D-cache Read accesses %u and misses %u\n", D_read_accesses, D_read_misses);
-					  	printf("D-cache Write accesses %u and misses %u\n", D_write_accesses, D_write_misses);
-					 	break;
-					}						
+				//branch, set IF = SQUASHED for two cycles, continue to propogate
+				counter = 1;				
 			}
 			else
 			{
@@ -141,7 +136,16 @@ int main(int argc, char **argv)
 		MEM = EX;
 		EX = ID; 
 		ID = IF;
-		IF = *tr_entry;
+		if(counter > 0){//if counter = 1
+			IF = SQUASHED;
+			counter++;
+			if(counter == 3){//after IF has been set to SQUASHED 2 times, will equal 3, reset counter.
+				counter = 0;
+			}
+		}
+		else{
+			IF = *tr_entry;
+		}
 		cycle_number++;
 
 	// Print Executed Instructions (trace_view_on=1)
