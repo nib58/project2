@@ -14,6 +14,7 @@ int main(int argc, char **argv)
 	unsigned int D_write_accesses = 0; 
 	unsigned int D_write_misses = 0;
 	int counter = 0;
+	int penalty = 0;
 
 	struct trace_item *tr_entry;
 	struct trace_item IF;
@@ -108,6 +109,14 @@ int main(int argc, char **argv)
 			else
 			{
 				size = trace_get_item(&tr_entry);
+				penalty = cache_access(I_cache, tr_entry->Addr, 0);
+				cycle_number = cycle_number + penalty;
+				if(penalty == 0){
+					I_accesses++;
+				}
+				else{
+					I_misses++;
+				}				
 				if(!size){
 					printf("+ Simulation terminates at cycle : %u\n", cycle_number);
 					printf("I-cache accesses %u and misses %u\n", I_accesses, I_misses);
@@ -120,6 +129,14 @@ int main(int argc, char **argv)
 		else
 		{
 			size = trace_get_item(&tr_entry);
+			penalty = cache_access(I_cache, tr_entry->Addr, 0);
+			cycle_number = cycle_number + penalty;
+			if(penalty == 0){
+			  	I_accesses++;
+			}
+			else{
+			  	I_misses++;
+			}
 			if(!size){
 				printf("+ Simulation terminates at cycle : %u\n", cycle_number);
 				printf("I-cache accesses %u and misses %u\n", I_accesses, I_misses);
@@ -170,7 +187,15 @@ int main(int argc, char **argv)
 				printf("[cycle %d] LOAD:", cycle_number);
 				printf(" (PC: %x)(sReg_a: %d)(dReg: %d)(addr: %x)\n", WB.PC, WB.sReg_a, WB.dReg, WB.Addr);
 			  }
-			  cycle_number = cycle_number + cache_access(D_cache, WB.Addr, 0);
+			  penalty = cache_access(D_cache, WB.Addr, 0);
+			  cycle_number = cycle_number + penalty;
+			  if(penalty == 0){
+			  	D_read_accesses++;
+			  }
+			  else{
+			  	D_read_misses++;
+			  }
+			  	
 			  // update D_read_access and D_read_misses
 			  break;
 			case ti_STORE:
@@ -178,7 +203,14 @@ int main(int argc, char **argv)
 				printf("[cycle %d] STORE:", cycle_number);
 				printf(" (PC: %x)(sReg_a: %d)(sReg_b: %d)(addr: %x)\n", WB.PC, WB.sReg_a, WB.sReg_b, WB.Addr);
 			  }
-			  cycle_number = cycle_number + cache_access(D_cache, WB.Addr, 1);
+			  penalty = cache_access(D_cache, WB.Addr, 1);
+			  cycle_number = cycle_number + penalty;
+			  if(penalty == 0){
+			  	D_write_accesses++;
+			  }
+			  else{
+			  	D_write_misses++;
+			  }
 			  // update D_write_access and D_write_misses
 			  break;
 			case ti_BRANCH:
