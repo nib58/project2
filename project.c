@@ -131,7 +131,6 @@ int main(int argc, char **argv)
 			test = 0;
 		}
 		// Cascade States
-
 		WB = MEM;
 		MEM = EX;
 		EX = ID; 
@@ -157,7 +156,6 @@ int main(int argc, char **argv)
 	// Print Executed Instructions (trace_view_on=1)
 		if((!size) && endCounter == 0){
 			endCounter = 1;
-			tr_entry->type = 9;
 		}
 		if(endCounter > 0){
 			endCounter++;
@@ -235,9 +233,6 @@ int main(int argc, char **argv)
 				printf("[cycle %d] JRTYPE:", cycle_number);
 				printf(" (PC: %x) (sReg_a: %d)(addr: %x)\n", WB.PC, WB.dReg, WB.Addr);
 			  }
-			  break;
-			case ti_END:
-			  if (trace_view_on) printf("[cycle %d] END:\n", cycle_number);
 			  break;
 		}
 	
