@@ -48,7 +48,7 @@ int main(int argc, char **argv)
   }
     
   trace_file_name = argv[1];
-  if (argc == 3) trace_view_on = atoi(argv[2]);
+  if (argc == 4) trace_view_on = atoi(argv[3]);
   
   //read in from cache_config.txt
   unsigned int I_size = 16; 
@@ -239,4 +239,5 @@ int main(int argc, char **argv)
 }
 	trace_uninit();
 	exit(0);
+	
 }
