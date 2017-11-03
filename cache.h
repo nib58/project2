@@ -24,6 +24,11 @@ struct cache_t
 
 int logarithm(int x)
 {
+	if (x == 1)
+	{
+		return 1;
+	}
+	
     int count = 0;
     while(x > 1)
     {
@@ -86,6 +91,12 @@ int cache_access(struct cache_t *cp, unsigned long address, int access_type)
     unsigned int index = address << index_lshift;
     index = index >> index_rshift;
     unsigned int tag = address >> tag_rshift;
+	
+	// Handle Single Set
+	if (cp->nsets == 1)
+	{
+		index = 0;
+	}
 
     // Check Blocks
     int i;
