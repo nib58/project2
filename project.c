@@ -25,7 +25,8 @@ int main(int argc, char **argv)
 	struct trace_item WB;
 	struct trace_item SQUASHED;
 	SQUASHED.type = 7;
-	
+	int endCounter = 0;
+	int noOp;
 	size_t size;
 	char *trace_file_name;
 	int trace_view_on = 0;
@@ -88,18 +89,12 @@ int main(int argc, char **argv)
 	{
 		// EX Processing
 		// Data Hazard
-		if((EX.type == 3) && (EX.dReg == ID.sReg_a || EX.dReg == ID.sReg_b))
+		if((EX.type == 3) && ((EX.dReg == ID.sReg_a) || (EX.dReg == ID.sReg_b)))//correct
 		{
 			//stall
-			EX.type = 0;
 			//bubble IF and ID 
-			dontUpdate = 1;	
-			printf("Load Use Error\n");	
-			test++;
-			if(test == 100){
-				exit(0);
-			}	
-			
+			IF = ID;
+			noOp = 1;
 		}
 		
 		// Branch Prediction
@@ -121,13 +116,6 @@ int main(int argc, char **argv)
 						I_misses++;
 					}	
 				}	
-				if(!size){
-					printf("+ Simulation terminates at cycle : %u\n", cycle_number);
-					printf("I-cache accesses %u and misses %u\n", I_accesses, I_misses);
-					printf("D-cache Read accesses %u and misses %u\n", D_read_accesses, D_read_misses);
-					printf("D-cache Write accesses %u and misses %u\n", D_write_accesses, D_write_misses);
-					break;
-				}
 		}
 		else
 		{
@@ -141,21 +129,17 @@ int main(int argc, char **argv)
 					}	
 			}
 			test = 0;
-			if(!size){
-				printf("+ Simulation terminates at cycle : %u\n", cycle_number);
-				printf("I-cache accesses %u and misses %u\n", I_accesses, I_misses);
-				printf("D-cache Read accesses %u and misses %u\n", D_read_accesses, D_read_misses);
-				printf("D-cache Write accesses %u and misses %u\n", D_write_accesses, D_write_misses);
-				break;
-			}
 		}
 		// Cascade States
 
 		WB = MEM;
 		MEM = EX;
 		EX = ID; 
-		if(dontUpdate == 0){
-			ID = IF;
+		ID = IF;
+		
+		if(noOp ==1 ){
+			EX.type = 0;
+			noOp = 0;
 		}
 		if(counter > 0){//if counter = 1
 			IF = SQUASHED;
@@ -165,21 +149,31 @@ int main(int argc, char **argv)
 			}
 		}
 		else{
-			if(dontUpdate == 0){
-				IF = *tr_entry;
+			IF = *tr_entry;
 			}
-			else{
-				dontUpdate = 0;
-			}
-		}
 		cycle_number++;//good
+		
 
 	// Print Executed Instructions (trace_view_on=1)
+		if((!size) && endCounter == 0){
+			endCounter = 1;
+			tr_entry->type = 9;
+		}
+		if(endCounter > 0){
+			endCounter++;
+		}
+		if(endCounter == 5){
+			printf("+ Simulation terminates at cycle : %u\n", cycle_number);
+			printf("I-cache accesses %u and misses %u\n", I_accesses, I_misses);
+			printf("D-cache Read accesses %u and misses %u\n", D_read_accesses, D_read_misses);
+			printf("D-cache Write accesses %u and misses %u\n", D_write_accesses, D_write_misses);
+			break;
+		}
 		
 		switch(WB.type)
 		{
 		   case ti_NOP:
-			  if (trace_view_on) printf("[cycle %d] NOP:", cycle_number);
+			  if (trace_view_on) printf("[cycle %d] NOP:\n", cycle_number);
 			  break;
 			case ti_RTYPE:
 			  if (trace_view_on) {
@@ -242,10 +236,12 @@ int main(int argc, char **argv)
 				printf(" (PC: %x) (sReg_a: %d)(addr: %x)\n", WB.PC, WB.dReg, WB.Addr);
 			  }
 			  break;
+			case ti_END:
+			  if (trace_view_on) printf("[cycle %d] END:\n", cycle_number);
+			  break;
 		}
 	
 }
-
 	trace_uninit();
 	exit(0);
 }
